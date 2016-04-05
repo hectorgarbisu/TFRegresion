@@ -1,12 +1,13 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 from random import shuffle
 import random
 
 num_epochs = 20000
 # dataset_lenght = 100
-window_size = 4
+window_size = 5
 num_batches = 1
 batch_size = 100
 alpha = 0.01
@@ -28,20 +29,33 @@ def setupSLP(input_size,hidden_size,output_size):
     sess.run(init)
     return x,y_,y,sess,error_measure,train
 
-def get_data():
-    dataset_length = 100
-    t = np.arange(0, 2*np.pi, 2*np.pi/dataset_length)
-    # xdata = np.cos(t)/2 # circle
-    # ydata = np.sin(t)/2
-    # xdata = np.cos(t)/2 + np.cos(10*t)*0.05 # close to circle
-    # ydata = np.sin(t)/2 + np.cos(10*t)*0.05
-    xdata = np.cos(t)/2 + np.sin(10*t)*0.05 # close to circle
-    ydata = np.sin(t)/2 + np.cos(10*t)*0.05
-    data = np.asarray(zip(xdata, ydata)).flatten()
+def get_data(args):
+    if (len(args)>1):
+        path = args[1]
+        f = open(path,'r')
+        period = f.readline()
+        xdim, ydim = f.readline().split()
+        name = f.readline()
+        data = list()
+        for line in f:
+            xi,yi = line.split()
+            data.append(2*float(xi)/float(xdim)-1)
+            data.append(1-2*float(yi)/float(ydim))
+        dataset_length = len(data)/2
+    else:
+        dataset_length = 100
+        t = np.arange(0, 2*np.pi, 2*np.pi/dataset_length)
+        # xdata = np.cos(t)/2 # circle
+        # ydata = np.sin(t)/2
+        # xdata = np.cos(t)/2 + np.cos(10*t)*0.05 # close to circle
+        # ydata = np.sin(t)/2 + np.cos(10*t)*0.05
+        xdata = np.cos(t)/2 + np.sin(10*t)*0.05 # close to circle
+        ydata = np.sin(t)/2 + np.cos(10*t)*0.05
+        data = np.asarray(zip(xdata, ydata)).flatten().tolist()
     return data,dataset_length
 
 x,y_,y,sess,error_measure,train = setupSLP(window_size*2,nW_hidden,2)
-data,dataset_length = get_data()
+data,dataset_length = get_data(sys.argv)
 
 print "----------------------"
 print "   Start training...  "
@@ -79,7 +93,7 @@ for epoch in range(num_epochs):
 print "----------------------"
 print "   Start testing...  "
 print "----------------------"
-outs = data[:2*window_size].tolist()
+outs = data[:2*window_size]
 test_size = dataset_length
 for yy in range(test_size):
     xs = np.atleast_2d([outs[2*yy+i] for i in range(2*window_size)])
