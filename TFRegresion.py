@@ -1,15 +1,15 @@
+import sys
+from random import shuffle
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
-from random import shuffle
-import random
+import os
 
 num_epochs = 20000
 # dataset_lenght = 100
 window_size = 5
 num_batches = 1
-batch_size = 100
 alpha = 0.01
 nW_hidden = 5
 
@@ -30,18 +30,32 @@ def setupSLP(input_size,hidden_size,output_size):
     return x,y_,y,sess,error_measure,train
 
 def get_data(args):
+    # if There are arguments
     if (len(args)>1):
         path = args[1]
-        f = open(path,'r')
-        period = f.readline()
-        xdim, ydim = f.readline().split()
-        name = f.readline()
-        data = list()
-        for line in f:
-            xi,yi = line.split()
-            data.append(2*float(xi)/float(xdim)-1)
-            data.append(1-2*float(yi)/float(ydim))
-        dataset_length = len(data)/2
+        # TODO Test for folder instead of one particular file
+        # a folder should contain the same signature repeated through files
+        # a batch should contain sequences across multiple samples
+        try:
+            f = open(path,'r')
+            period = f.readline()
+            xdim, ydim = f.readline().split()
+            name = f.readline()
+            data = list()
+            #  TODO Adjust every signature to a fixed length (1000 points or so)
+            for line in f:
+                xi,yi = line.split()
+                data.append(2*float(xi)/float(xdim)-1)
+                data.append(1-2*float(yi)/float(ydim))
+            dataset_length = len(data)/2
+            f.close()
+        # is a directory or file doesnt exist
+        except:
+            filelist = os.listdir(path)
+            for filename in filelist:
+                print "file "+path+filename
+            print "total: ",len(filelist)," files"
+    # if program is called without arguments
     else:
         dataset_length = 100
         t = np.arange(0, 2*np.pi, 2*np.pi/dataset_length)
@@ -56,7 +70,8 @@ def get_data(args):
 
 x,y_,y,sess,error_measure,train = setupSLP(window_size*2,nW_hidden,2)
 data,dataset_length = get_data(sys.argv)
-
+print dataset_length
+batch_size = dataset_length
 print "----------------------"
 print "   Start training...  "
 print "----------------------"
