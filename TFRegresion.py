@@ -29,9 +29,19 @@ def setupSLP(input_size,hidden_size,output_size):
     sess.run(init)
     return x,y_,y,sess,error_measure,train
 
-def get_data(args):
-    # if There are arguments
-    if (len(args)>1):
+def getFromFunction():
+        dataset_length = 100
+        t = np.arange(0, 2*np.pi, 2*np.pi/dataset_length)
+        # xdata = np.cos(t)/2 # circle
+        # ydata = np.sin(t)/2
+        # xdata = np.cos(t)/2 + np.cos(10*t)*0.05 # close to circle
+        # ydata = np.sin(t)/2 + np.cos(10*t)*0.05
+        xdata = np.cos(t)/2 + np.sin(10*t)*0.05 # close to circle
+        ydata = np.sin(t)/2 + np.cos(10*t)*0.05
+        data = np.asarray(zip(xdata, ydata)).flatten().tolist()
+        return data, dataset_length
+
+def getFromFile(args):
         path = args[1]
         # TODO Test for folder instead of one particular file
         # a folder should contain the same signature repeated through files
@@ -55,22 +65,20 @@ def get_data(args):
             for filename in filelist:
                 print "file "+path+filename
             print "total: ",len(filelist)," files"
-    # if program is called without arguments
+        return data,dataset_length
+
+def get_data(args):
+    # if There are arguments, tries to read path
+    if (len(args)>1):
+        data,dataset_length = getFromFile(args)
+    # no args
     else:
-        dataset_length = 100
-        t = np.arange(0, 2*np.pi, 2*np.pi/dataset_length)
-        # xdata = np.cos(t)/2 # circle
-        # ydata = np.sin(t)/2
-        # xdata = np.cos(t)/2 + np.cos(10*t)*0.05 # close to circle
-        # ydata = np.sin(t)/2 + np.cos(10*t)*0.05
-        xdata = np.cos(t)/2 + np.sin(10*t)*0.05 # close to circle
-        ydata = np.sin(t)/2 + np.cos(10*t)*0.05
-        data = np.asarray(zip(xdata, ydata)).flatten().tolist()
+        data,dataset_length = getFromFunction()
     return data,dataset_length
 
 x,y_,y,sess,error_measure,train = setupSLP(window_size*2,nW_hidden,2)
 data,dataset_length = get_data(sys.argv)
-print dataset_length
+print "dataset_length",dataset_length
 batch_size = dataset_length
 print "----------------------"
 print "   Start training...  "
